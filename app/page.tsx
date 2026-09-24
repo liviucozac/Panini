@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ADMIN, PEOPLE, type AppState, type Ingredient } from "@/lib/types";
+import { ADMIN, DRAGOSTE, type AppState, type Ingredient } from "@/lib/types";
 import SauceAlarm from "./SauceAlarm";
 import AdminPanel from "./AdminPanel";
+import PaymentPrank from "./PaymentPrank";
 import { lei } from "@/lib/format";
 
 
@@ -19,6 +20,8 @@ export default function Home() {
   const [count, setCount] = useState(1);
   const [picked, setPicked] = useState<string[]>([]);
   const [sauce, setSauce] = useState<string | null>(null);
+  const [prank, setPrank] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const draftFor = useRef<string | null>(null);
@@ -36,11 +39,27 @@ export default function Home() {
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Remember who you are between visits (except Liviu, who needs the PIN).
+  useEffect(() => {
+    if (!data || me) return;
     try {
       const saved = localStorage.getItem("me");
-      if (saved && saved !== ADMIN && (PEOPLE as readonly string[]).includes(saved)) setMe(saved);
+      if (saved && saved !== ADMIN && data.people.includes(saved)) setMe(saved);
     } catch {}
-  }, [load]);
+  }, [data, me]);
+
+  // If Liviu removes you from the list, you get kicked back to the name picker.
+  useEffect(() => {
+    if (data && me && !data.people.includes(me)) { setMe(null); draftFor.current = null; }
+  }, [data, me]);
+
+  const refresh = async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  };
 
   // Load the person's saved order into the form once, when they're picked.
   useEffect(() => {
@@ -60,6 +79,7 @@ export default function Home() {
 
   const toggle = (ing: Ingredient) => {
     if (ing.sauce) return setSauce(ing.name);
+    if (ing.id === DRAGOSTE.id && !picked.includes(ing.id)) return setPrank(true);
     setPicked((p) => (p.includes(ing.id) ? p.filter((x) => x !== ing.id) : [...p, ing.id]));
   };
 
@@ -88,6 +108,10 @@ export default function Home() {
   return (
     <main className="wrap">
       <header className="top">
+        <button className="refresh" onClick={refresh} disabled={refreshing} aria-label="Reîncarcă datele">
+          <motion.span aria-hidden animate={refreshing ? { rotate: 360 } : { rotate: 0 }} transition={refreshing ? { repeat: Infinity, duration: 0.7, ease: "linear" } : { duration: 0 }}>↻</motion.span>
+          Reîncarcă
+        </button>
         <h1>Sandvișuri de sâmbătă</h1>
         <p className="sub">Alege ce vrei, Liviu le face. Fără sosuri.</p>
       </header>
@@ -97,7 +121,7 @@ export default function Home() {
       <section aria-labelledby="who">
         <h2 id="who">{me ? `Salut, ${me}` : "Cine ești?"}</h2>
         <div className="chips">
-          {PEOPLE.map((p) => (
+          {(data?.people ?? []).map((p) => (
             <button
               key={p}
               className={`chip ${me === p ? "on" : ""} ${data?.orders[p] ? "done" : ""}`}
@@ -132,7 +156,7 @@ export default function Home() {
             </div>
           </div>
 
-          {ingredients.length === 0 ? (
+          {ingredients.length <= 1 ? (
             <p className="empty">
               {me === ADMIN ? "Nu ai adăugat încă ingrediente. Treci la „Ingrediente și total”." : "Liviu n-a pus încă ingredientele. Revino puțin mai târziu."}
             </p>
@@ -145,7 +169,7 @@ export default function Home() {
                     <button className={`ing ${on ? "on" : ""} ${ing.sauce ? "sauce" : ""}`} onClick={() => toggle(ing)} aria-pressed={on}>
                       <span className="tick" aria-hidden>{on ? "✓" : ""}</span>
                       <span className="ing-name">{ing.name}</span>
-                      <span className="ing-price">{lei(ing.price)}</span>
+                      <span className="ing-price">{ing.id === DRAGOSTE.id ? "gratis*" : lei(ing.price)}</span>
                     </button>
                   </li>
                 );
@@ -174,6 +198,13 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {prank && (
+        <PaymentPrank
+          onCancel={() => setPrank(false)}
+          onPaid={() => { setPrank(false); setPicked((p) => [...p, DRAGOSTE.id]); }}
+        />
+      )}
 
       <AnimatePresence>{sauce && <SauceAlarm sauce={sauce} onClose={() => setSauce(null)} />}</AnimatePresence>
 

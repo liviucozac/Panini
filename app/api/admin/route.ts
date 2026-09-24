@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { redis, KEYS } from "@/lib/redis";
-import type { Ingredient } from "@/lib/types";
+import { redis, KEYS, getPeople } from "@/lib/redis";
+import { ADMIN, DRAGOSTE, type Ingredient } from "@/lib/types";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       const raw: unknown[] = Array.isArray(body.ingredients) ? body.ingredients : [];
       const clean: Ingredient[] = raw
         .filter((i): i is Ingredient => !!i && typeof (i as Ingredient).name === "string")
-        .filter((i) => i.name.trim().length > 0)
+        .filter((i) => i.name.trim().length > 0 && i.id !== DRAGOSTE.id)
         .map((i) => ({
           id: String(i.id),
           name: i.name.trim().slice(0, 40),
@@ -24,6 +24,17 @@ export async function POST(req: Request) {
           sauce: !!i.sauce,
         }));
       await redis.set(KEYS.ingredients, clean);
+      return NextResponse.json({ ok: true });
+    }
+
+    case "savePeople": {
+      const raw: unknown[] = Array.isArray(body.people) ? body.people : [];
+      const names = [...new Set(raw.filter((n): n is string => typeof n === "string").map((n) => n.trim().slice(0, 30)).filter(Boolean))];
+      if (!names.includes(ADMIN)) names.push(ADMIN);
+      // Drop orders of people who were removed.
+      const removed = (await getPeople()).filter((p) => !names.includes(p));
+      if (removed.length) await redis.hdel(KEYS.orders, ...removed);
+      await redis.set(KEYS.people, names);
       return NextResponse.json({ ok: true });
     }
 

@@ -25,7 +25,7 @@ export default function SauceAlarm({ sauce, onClose }: { sauce: string; onClose:
         animate={calm ? {} : { x: [-14, 14, -10, 10, 0], rotate: [-4, 4, -2, 2, 0], scale: [1, 1.08, 1] }}
         transition={{ duration: 0.35, repeat: Infinity, repeatDelay: 0.15 }}
       >
-        NU SE PUN SOSURI ÎN SANDVIȘURI
+        NU SE PUNE MAIONEZĂ SAU KETCHUP IN SANDWICHURI
       </motion.h2>
       <p>Ai încercat să pui {sauce}. Incidentul a fost raportat.</p>
       <button onClick={onClose} autoFocus>Bine, fără sos</button>

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { redis, KEYS } from "@/lib/redis";
-import type { Ingredient, Order } from "@/lib/types";
+import { redis, KEYS, getPeople } from "@/lib/redis";
+import { DRAGOSTE, type Ingredient, type Order } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const [ingredients, orders] = await Promise.all([
+  const [people, ingredients, orders] = await Promise.all([
+    getPeople(),
     redis.get<Ingredient[]>(KEYS.ingredients),
     redis.hgetall<Record<string, Order>>(KEYS.orders),
   ]);
-  return NextResponse.json({ ingredients: ingredients ?? [], orders: orders ?? {} });
+  return NextResponse.json({ people, ingredients: [...(ingredients ?? []), DRAGOSTE], orders: orders ?? {} });
 }

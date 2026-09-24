@@ -95,3 +95,34 @@ tfoot th, tfoot td { border-bottom: 0; font-weight: 800; }
 .shopping { list-style: none; padding: 0; margin: 0; background: var(--paper); border-radius: var(--r-sm); }
 .shopping li { display: flex; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .shopping li:last-child { border-bottom: 0; }
+
+/* Refresh */
+.top { position: relative; }
+.refresh { position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; gap: 6px; background: var(--paper); border: 2px solid var(--pine); border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: .9rem; }
+.refresh span { display: inline-block; font-size: 1.1rem; line-height: 1; }
+.top h1 { padding-right: 110px; }
+@media (max-width: 420px) { .top h1 { padding-right: 0; padding-top: 44px; } }
+
+/* People editor */
+.people { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.people li { display: flex; align-items: center; gap: 6px; background: var(--paper); border-radius: 999px; padding: 4px 4px 4px 14px; font-weight: 600; }
+.people li:has(> span:only-child) { padding-right: 14px; }
+.people .ghost { padding: 2px 9px; font-size: .85rem; }
+.add-person input { flex: 1; min-width: 0; padding: 10px 12px; border: 2px solid var(--line); border-radius: 999px; background: #fff; }
+
+/* Fake payment sheet — deliberately "bank-app" looking, unlike the rest of the page */
+.pay-scrim { background: rgba(10, 20, 40, .6); z-index: 40; }
+.pay { background: #fff; color: #1a1f36; width: 100%; max-width: 380px; border-radius: 14px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.35); font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+.pay-head { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: #556; margin-bottom: 14px; }
+.pay-x { margin-left: auto; border: 0; background: none; font-size: 1rem; color: #889; }
+.pay-item { margin: 0; color: #556; }
+.pay-amount { font-size: 2.2rem; font-weight: 700; margin: 2px 0 16px; letter-spacing: -0.02em; }
+.pay label { display: block; font-size: .8rem; color: #556; margin-bottom: 10px; }
+.pay input { display: block; width: 100%; margin-top: 4px; padding: 11px 12px; border: 1px solid #d5d9e2; border-radius: 8px; font-size: 1rem; background: #fff; color: #1a1f36; }
+.pay input:focus { outline: 2px solid #635bff; border-color: #635bff; }
+.pay-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pay-btn { width: 100%; margin-top: 8px; background: #635bff; color: #fff; border: 0; border-radius: 8px; padding: 13px; font-weight: 700; font-size: 1rem; }
+.pay-cancel { width: 100%; margin-top: 6px; background: none; border: 0; color: #889; padding: 8px; font-size: .9rem; }
+.pay-proc { text-align: center; padding: 24px 0 6px; }
+.spinner { width: 40px; height: 40px; border-radius: 50%; border: 4px solid #e3e5f0; border-top-color: #635bff; margin: 0 auto 14px; }
+.pay-heart { font-size: 3rem; margin: 0; }
